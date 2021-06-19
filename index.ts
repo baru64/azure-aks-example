@@ -11,12 +11,12 @@ import * as storage from "@pulumi/azure-native/storage";
 
 const resourceGroup = new resources.ResourceGroup("azure-aks-example");
 
-const cdnProfile = new cdn.Profile("profile", {
-    resourceGroupName: resourceGroup.name,
-    sku: {
-        name: cdn.SkuName.Standard_Microsoft,
-    },
-});
+// const cdnProfile = new cdn.Profile("profile", {
+//     resourceGroupName: resourceGroup.name,
+//     sku: {
+//         name: cdn.SkuName.Standard_Microsoft,
+//     },
+// });
 
 const storageAccount = new storage.StorageAccount("storageaccount", {
     enableHttpsTrafficOnly: true,
@@ -35,7 +35,7 @@ const staticWebsite = new storage.StorageAccountStaticWebsite("staticWebsite", {
 });
 
 // Upload the files
-["index.html", "script.js", "404.html"].map(name =>
+["index.html", "404.html"].map(name =>
     new storage.Blob(name, {
         resourceGroupName: resourceGroup.name,
         accountName: storageAccount.name,
@@ -45,32 +45,62 @@ const staticWebsite = new storage.StorageAccountStaticWebsite("staticWebsite", {
     }),
 );
 
-// Web endpoint to the website
-export const staticEndpoint = storageAccount.primaryEndpoints.web;
+["script.js"].map(name =>
+    new storage.Blob(name, {
+        resourceGroupName: resourceGroup.name,
+        accountName: storageAccount.name,
+        containerName: staticWebsite.containerName,
+        source: new pulumi.asset.FileAsset(`./frontend/${name}`),
+        contentType: "text/javascript",
+    }),
+);
 
-// add a CDN.
-const endpointOrigin = storageAccount.primaryEndpoints.apply(ep => ep.web.replace("https://", "").replace("/", ""));
-const endpoint = new cdn.Endpoint("endpoint", {
-    endpointName: storageAccount.name.apply(sa => `cdn-endpnt-${sa}`),
-    isHttpAllowed: false,
-    isHttpsAllowed: true,
-    originHostHeader: endpointOrigin,
-    origins: [
-        {
-            hostName: endpointOrigin,
-            httpsPort: 443,
-            name: "origin-storage-account",
-        },
-        {
-            hostName: "http://exampleaksbackend1906.northeurope.cloudapp.azure.com",
-            httpPort: 80,
-            name: "aks-backend",
-        }
-    ],
-    profileName: cdnProfile.name,
-    queryStringCachingBehavior: cdn.QueryStringCachingBehavior.NotSet,
+const blobServiceProperties = new storage.BlobServiceProperties("blobServiceProperties", {
+    accountName: storageAccount.name,
+    blobServicesName: "default",
     resourceGroupName: resourceGroup.name,
+    cors: {
+        corsRules: [
+            {
+                allowedHeaders: ["*"],
+                allowedMethods: [
+                    "GET",
+                    "POST",
+                    "PUT",
+                ],
+                allowedOrigins: [
+                    "http://exampleaksbackend1906.northeurope.cloudapp.azure.com"
+                ],
+                exposedHeaders: ["*"],
+                maxAgeInSeconds: 5
+            }
+        ]
+    }
 });
+
+// add a CDN - not available on student subscription
+// const endpointOrigin = storageAccount.primaryEndpoints.apply(ep => ep.web.replace("https://", "").replace("/", ""));
+// const endpoint = new cdn.Endpoint("endpoint", {
+//     endpointName: storageAccount.name.apply(sa => `cdn-endpnt-${sa}`),
+//     isHttpAllowed: false,
+//     isHttpsAllowed: true,
+//     originHostHeader: endpointOrigin,
+//     origins: [
+//         {
+//             hostName: endpointOrigin,
+//             httpsPort: 443,
+//             name: "origin-storage-account",
+//         },
+//         {
+//             hostName: "http://exampleaksbackend1906.northeurope.cloudapp.azure.com",
+//             httpPort: 80,
+//             name: "aks-backend",
+//         }
+//     ],
+//     profileName: cdnProfile.name,
+//     queryStringCachingBehavior: cdn.QueryStringCachingBehavior.NotSet,
+//     resourceGroupName: resourceGroup.name,
+// });
 
 const adApp = new azuread.Application("aks", {
     displayName: "aks",
@@ -159,4 +189,7 @@ export const registrypassword = registryCreds.apply(registryCreds => registryCre
 
 // CDN endpoint to the website.
 // Allow it some time after the deployment to get ready.
-export const cdnEndpoint = pulumi.interpolate`https://${endpoint.hostName}/`
+// export const cdnEndpoint = pulumi.interpolate`https://${endpoint.hostName}/`
+
+// Web endpoint to the website
+export const staticEndpoint = storageAccount.primaryEndpoints.web;
