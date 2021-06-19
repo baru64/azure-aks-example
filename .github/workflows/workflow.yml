@@ -36,7 +36,6 @@ jobs:
   build:
     name: Build and deploy k8s resources
     runs-on: ubuntu-latest
-    environment: dev
     steps:
     - uses: actions/checkout@v2
     
