@@ -1,6 +1,8 @@
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    service.beta.kubernetes.io/azure-dns-label-name: exampleaksbackend1906
   name: backend-api-service
   labels:
     app: backend
