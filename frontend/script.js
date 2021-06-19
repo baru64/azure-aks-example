@@ -1,6 +1,6 @@
 const url = "http://exampleaksbackend1906.northeurope.cloudapp.azure.com";
 async function checkBackend() {
-    let response = fetch(url);
+    let response = await fetch(url);
     let testbox = document.getElementById('testbox');
     if (response.ok) {
       let respjson = await response.json();
