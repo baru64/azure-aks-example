@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY_NAME: exampleregistry19062021
-  CLUSTER_NAME: azure-aks
+  CLUSTER_NAME: azure-aks3bc4a01f
   CLUSTER_RESOURCE_GROUP: azure-aks-example0b38c3ba
   NAMESPACE: default
 
