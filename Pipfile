@@ -9,6 +9,8 @@ flake8 = "*"
 [packages]
 fastapi = "*"
 uvicorn = "*"
+sqlalchemy = "*"
+psycopg2-binary = "*"
 
 [requires]
 python_version = "3.8"
