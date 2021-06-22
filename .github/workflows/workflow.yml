@@ -88,7 +88,7 @@ jobs:
 
     # Add bitnami repo
     - run: |
-        helm repo add bitnami https://charts/bitnami.com/bitnami
+        helm repo add bitnami https://charts.bitnami.com/bitnami
     
     # Pull PostgreSQL chart
     - run: |
