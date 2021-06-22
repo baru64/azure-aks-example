@@ -82,3 +82,33 @@ jobs:
         imagepullsecrets: |
           ${{ env.REGISTRY_NAME }}-registry-connection
         namespace: ${{ env.NAMESPACE }}
+    
+    # Setup Helm
+    - uses: azure/setup-helm@v1
+
+    # Add bitnami repo
+    - run: |
+        helm repo add bitnami https://charts/bitnami.com/bitnami
+    
+    # Pull PostgreSQL chart
+    - run: |
+        helm pull bitnami/postgresql --untar
+    
+    # Postgres secret
+    - uses: azure/k8s-create-secret@v1
+      with:
+        secret-type: generic
+        secret-name: postgres-password
+        arguments: --from-literal=POSTGRESQL_PASSWORD=${{ secrets.POSTGRESQL_PASSWORD }}
+        namespace: ${{ env.NAMESPACE }}
+
+    # Bake helm chart
+    - run: |
+        helm template postgres ./postgresql/ -f postgres-values.yaml > manifests/postgres.yaml
+    
+    # Deploy PostgreSQL
+    - uses: azure/k8s-deploy@v1
+      with:
+        manifests: |
+          manifests/postgres.yaml
+        namespace: ${{ env.NAMESPACE }}
