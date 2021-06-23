@@ -15,3 +15,9 @@ spec:
           containers:
           - name: 'worker'
             image: exampleregistry19062021.azurecr.io/myworker
+            env:
+            - name: POSTGRESQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: postgresql-password
+                  name: postgres-password

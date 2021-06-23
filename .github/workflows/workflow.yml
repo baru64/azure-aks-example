@@ -101,9 +101,9 @@ jobs:
           manifests/postgres.yaml
         namespace: ${{ env.NAMESPACE }}
 
-    # Create configmap
+    # Create configmap if not exists
     - run: |
-        kubectl create configmap app-config --from-file=configmap/
+        kubectl create configmap app-config --from-file=configmap/ --dry-run=client -o json | kubectl apply -f -
     
     # Deploy app to AKS
     - uses: azure/k8s-deploy@v1
@@ -113,6 +113,22 @@ jobs:
           manifests/service.yml
         images: |
           ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
+        imagepullsecrets: |
+          ${{ env.REGISTRY_NAME }}-registry-connection
+        namespace: ${{ env.NAMESPACE }}
+
+    # Build worker
+    - run: |
+        docker build ./worker/ -t ${{ env.REGISTRY_NAME }}.azurecr.io/myworker:${{ github.sha }}
+        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/myworker:${{ github.sha }}
+
+    # Deploy job to AKS
+    - uses: azure/k8s-deploy@v1
+      with:
+        manifests: |
+          manifests/indexed-job.yml
+        images: |
+          ${{ env.REGISTRY_NAME }}.azurecr.io/myworker:${{ github.sha }}
         imagepullsecrets: |
           ${{ env.REGISTRY_NAME }}-registry-connection
         namespace: ${{ env.NAMESPACE }}
