@@ -18,6 +18,7 @@ async def startup_event():
     with open('/etc/config/things.json', 'r') as json_file:
         things = json.load(json_file)
     with SessionLocal() as db:
+        crud.delete_all_items(db)
         for thing in things:
             new_thing = models.Item(
                 title=thing['title'],
