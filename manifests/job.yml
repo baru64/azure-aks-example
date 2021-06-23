@@ -5,6 +5,7 @@ metadata:
 spec:
   template:
     spec:
+      restartPolicy: Never
       containers:
       - name: 'worker'
         image: exampleregistry19062021.azurecr.io/myworker
