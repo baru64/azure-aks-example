@@ -1,17 +1,20 @@
-import os
+# import os
 from datetime import datetime, timezone
 
 from . import models
 from .database import SessionLocal
 
-INDEX = int(os.environ['JOB_COMPLETION_INDEX']) + 1
+# no indexed jobs in kubernetes v1.19
+# INDEX = int(os.environ['JOB_COMPLETION_INDEX'])
 
 
 def main():
     with SessionLocal as db:
-        item = db.query(models.Item).get(INDEX)
-        item.desciption = datetime.now(tz=timezone.utc).isoformat()
-        db.add(item)
+        items = db.query(models.Item).all()
+        # item = items[INDEX]
+        for item in items:
+            item.desciption = datetime.now(tz=timezone.utc).isoformat()
+            db.add(item)
         db.commit()
 
 
