@@ -13,7 +13,7 @@ def main():
         items = db.query(models.Item).all()
         # item = items[INDEX]
         for item in items:
-            item.desciption = datetime.now(tz=timezone.utc).isoformat()
+            item.description = datetime.now(tz=timezone.utc).isoformat()
             db.add(item)
         db.commit()
 
