@@ -71,18 +71,6 @@ jobs:
         secret-name: ${{ env.REGISTRY_NAME }}-registry-connection
         namespace: ${{ env.NAMESPACE }}
     
-    # Deploy app to AKS
-    - uses: azure/k8s-deploy@v1
-      with:
-        manifests: |
-          manifests/deployment.yml
-          manifests/service.yml
-        images: |
-          ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
-        imagepullsecrets: |
-          ${{ env.REGISTRY_NAME }}-registry-connection
-        namespace: ${{ env.NAMESPACE }}
-    
     # Setup Helm
     - uses: azure/setup-helm@v1
 
@@ -111,4 +99,20 @@ jobs:
       with:
         manifests: |
           manifests/postgres.yaml
+        namespace: ${{ env.NAMESPACE }}
+
+    # Create configmap
+    - run: |
+        kubectl create configmap app-config --from-file=configmap/
+    
+    # Deploy app to AKS
+    - uses: azure/k8s-deploy@v1
+      with:
+        manifests: |
+          manifests/deployment.yml
+          manifests/service.yml
+        images: |
+          ${{ env.REGISTRY_NAME }}.azurecr.io/myimage:${{ github.sha }}
+        imagepullsecrets: |
+          ${{ env.REGISTRY_NAME }}-registry-connection
         namespace: ${{ env.NAMESPACE }}

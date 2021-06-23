@@ -24,3 +24,10 @@ spec:
             secretKeyRef:
               key: postgresql-password
               name: postgres-password
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: app-config
