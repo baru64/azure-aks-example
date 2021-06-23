@@ -130,9 +130,14 @@ jobs:
     - uses: azure/k8s-deploy@v1
       with:
         manifests: |
-          manifests/job.yml
+          manifests/cronjob.yml
         images: |
           ${{ env.REGISTRY_NAME }}.azurecr.io/myworker:${{ github.sha }}
         imagepullsecrets: |
           ${{ env.REGISTRY_NAME }}-registry-connection
         namespace: ${{ env.NAMESPACE }}
+    
+    # Delete cronjob if exists
+    - run: |
+        kubectl delete job update-cronjob || true
+    
