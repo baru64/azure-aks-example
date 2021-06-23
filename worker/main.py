@@ -9,7 +9,7 @@ from .database import SessionLocal
 
 
 def main():
-    with SessionLocal as db:
+    with SessionLocal() as db:
         items = db.query(models.Item).all()
         # item = items[INDEX]
         for item in items:
